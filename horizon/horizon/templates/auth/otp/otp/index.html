@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "OTP" %}{% endblock %}
+{% block css %}
+
+{% endblock %}
+
+{% block body_id %}otp{% endblock %}
+
+{% block content %}
+	{% include 'auth/_otp.html' %}
+{% endblock %}
+
