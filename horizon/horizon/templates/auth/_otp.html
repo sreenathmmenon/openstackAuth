@@ -1,12 +1,12 @@
-
 {% load i18n %}
+
 
 {% block modal-body %}
 <div class="outer" style=" display: table;position: absolute;height: 80%;width: 100%;">
 <div class="middle" style="display: table-cell;vertical-align: middle;">
 	<form name= 'otp_submit' action='/dashboard/otpSubmit' style=" margin-left: auto;
     margin-right: auto;
-    width: 70%;
+    width: 440px !important;
     background-color: #b0e0e6;text-align: center;background-image: -ms-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
 
 /* Mozilla Firefox */ 
@@ -23,17 +23,26 @@ background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
 
 /* W3C Markup, IE10 Release Preview */ 
 background-image: linear-gradient(to bottom, #FFFFFF 0%, #F2DEDE 100%);padding: 50px;border: 1px solid #eee;border-radius: 5px;">
-	 <div class="for_image" style="padding-bottom: 15px;"><img src="/static/dashboard/img/logo-splash.png"></div>
+	<h3>Two-factor authentication</h3>
+	<!--<div class="for_image" style="padding-bottom: 15px;"><img src="/static/dashboard/img/logo-splash.png"></div>-->
 	{% if request.session.otp_invalid %}
 		<span style= "color:red;font-size:12px;">Entered token is either invalid/expired! </span><br/><br/> 
 	{% endif %}
-	<span> Enter OTP </span>
-	<input type="text" name="otp" value="" style="border: 1px solid #8e8e8e;border-radius: 5px;height: 20px;width: 15%;"/>  
-	<input class="" type="submit" id="" style="" value="Verify" name="Submit" style="border: 1px solid #8e8e8e;border-radius: 5px">
+	<p class="overview" style = "margin-bottom:22px !important;">We have sent an SMS to your phone number (<b>+91 ***** *1531</b>) with a 8-digit code to enter below.</p>
+	<div class="form-group" style ="position:relative; margin-bottom: 20px; !important;">
+		<label for="code">6-digit OTP code</label>
+		<div class="input-icon icon-sms"></div>
+		<!--<span> Enter OTP </span>-->
+		<input type="text" name="otp" value="" style="border: 1px solid #8e8e8e;border-radius: 5px;height: 20px;width: 15%; margin-top: 1%;"/>  
+	</div>
+	<!--<input class="" type="submit" id="" style="" value="Verify" name="Submit" style="border: 1px solid #8e8e8e;border-radius: 5px">-->
+	<button class="btn btn-primary btn-lg btn-block" name="submit" tabindex="2" type="submit" style="padding-left: 18px; padding-right: 18px;">Verify OTP Code</button>
 <br/>
-<a style="float:right;color: black;" href="/dashboard/back_to_login">re-login</a>
+<!--<a style="float:right;color: black;" href="/dashboard/back_to_login">re-login</a>-->
 
 </form>
 </div>
 </div>
 {% endblock %}
+
+
