@@ -72,55 +72,59 @@ class Identity(sql.Identity):
                         #toPhone = extra['phone']
                         toPhone  = tPhone
 
-			#import datetime
-			#import time
+			import datetime
+			import time
 
-	                #last_otp_time = ''
-		        #total_row_otp = ''
-			#savedTime = 0
-			#diff_sec = 0
-		        #otp_time_limit = '180'
-			#time_format = '%Y-%m-%d %H:%M:%S'
+	                last_otp_time = ''
+		        total_row_otp = ''
+			savedTime = 0
+			diff_sec = 0
+		        otp_time_limit = '60'
+			time_format = '%Y-%m-%d %H:%M:%S'
+		
+		        current = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		        new_current = datetime.datetime.strptime(current, time_format) 	
 			
-		        #current = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		        #new_current = datetime.datetime.strptime(current, time_format) 	
-			
-			#idObj = sql.Identity(userid)
+			idObj = sql.Identity(userid)
 
 			#Find the time of last generated OTP
-    	                #savedOtpResult = idObj.selectOTP(userid)
-                        #if savedOtpResult:
-                            #savedTime = savedOtpResult[1]
-			    #LOG.info(type(savedTime))
+    	                savedOtpResult = idObj.selectOTP(userid)
+                        if savedOtpResult:
+                            savedTime = savedOtpResult[1]
+			    LOG.info(savedTime)
+			    LOG.info(type(savedTime))
                             #savedTime = datetime.datetime.strptime(savedTime, time_format)
- 			    #LOG.info('Types are:')
-		     	    #LOG.info(type(new_current))
-	                    #diff = new_current - savedTime
-			    #diff_sec = diff.total_seconds()
-			    #LOG.info('Time difference is ')
-			    #LOG.info(diff_sec)
+ 			    LOG.info('Types are:')
+		     	    LOG.info(type(new_current))
+	                    diff = new_current - savedTime
+			    diff_sec = diff.total_seconds()
+			    LOG.info('Time difference is ')
+			    LOG.info(diff_sec)
 
-                	#if (diff_sec == 0) or (diff_sec > 180):
-			    # calling otp generate function
-                        otp = self.generateOTP()
-                        print(otp)
-                        LOG.info('OTP value is ')
-                        LOG.info(otp)
+                	if (diff_sec == 0) or (diff_sec > 180):
+			    #calling otp generate function
+                            otp = self.generateOTP()
+                            print(otp)
+                            LOG.info('OTP value is ')
+                            LOG.info(otp)
 
-                        # for inserting otp in table
-                        dbBackendObj.insertOtp(otp,userid)
+                            # for inserting otp in table
+                            dbBackendObj.insertOtp(otp,userid)
 
-                        # For sending SMS to user with OTP values
-                        smsText = "Your OTP for openstack login is :" + str(otp)
-                        #sms = client.sms.messages.create(body="Your OTP for openstack login is :" + str(otp) , to=toPhone, from_=str(twilio_from))
-                        message = client.messages.create(to=toPhone, from_=fPhone, body=smsText)
+                            # For sending SMS to user with OTP values
+                            smsText = "Your OTP for openstack login is :" + str(otp)
+                            #sms = client.sms.messages.create(body="Your OTP for openstack login is :" + str(otp) , to=toPhone, from_=str(twilio_from))
+                            message = client.messages.create(to=toPhone, from_=fPhone, body=smsText)
                         
-                        # If sms sent, return true, else false.
-                        if(message.sid) :
-                            LOG.info(message)
-                            return True
-                        else :
-                            return False
+                            # If sms sent, return true, else false.
+                            if(message.sid) :
+                                LOG.info(message)
+                                return True
+                            else :
+                                return False
+			else:
+			    #If returning to the page for second time after a successful otp generation
+			    return True
                 else :
                         return False 
 
