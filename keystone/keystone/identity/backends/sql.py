@@ -21,9 +21,10 @@ from keystone.i18n import _
 from keystone import identity
 from sqlalchemy import func
 import datetime
-
+from oslo_log import log
 CONF = cfg.CONF
 
+LOG = log.getLogger(__name__)
 
 class User(sql.ModelBase, sql.DictBase):
     __tablename__ = 'user'
@@ -75,18 +76,20 @@ class OTPTable(sql.ModelBase, sql.DictBase):
     Class for OTP table
     """
     __tablename__ = 'otp'
-    attributes = ['userid', 'OTPvalue', 'time']
-    userid = sql.Column(sql.String(64), primary_key=True)
-    OTPvalue = sql.Column(sql.String(64))
-    time = sql.Column(sql.DateTime,onupdate=datetime.datetime.now)
+    attributes    = ['userid', 'OTPvalue', 'auth_method', 'time']
+    userid        = sql.Column(sql.String(64), primary_key=True)
+    OTPvalue      = sql.Column(sql.String(64))
+    auth_method   = sql.Column(sql.String(64))
+    time          = sql.Column(sql.DateTime,onupdate=datetime.datetime.now)
 
 class Faileduser(sql.ModelBase, sql.DictBase):
     """
     Class for faileduser table
     """
     __tablename__ = 'failedusers'
-    attributes = ['userid', 'time']
+    attributes = ['userid', 'auth_method', 'time']
     userid = sql.Column(sql.String(64), primary_key=True)
+    auth_method   = sql.Column(sql.String(64))
     time = sql.Column(sql.DateTime,onupdate=datetime.datetime.now)
 
 class Faillogin(sql.ModelBase, sql.DictBase):
@@ -94,8 +97,9 @@ class Faillogin(sql.ModelBase, sql.DictBase):
     Class for failedlogin table
     """
     __tablename__ = 'faillogin'
-    attributes = ['userid', 'time']
+    attributes = ['userid', 'auth_method', 'time']
     userid = sql.Column(sql.String(64), primary_key=True)
+    auth_method   = sql.Column(sql.String(64))
     time = sql.Column(sql.DateTime,onupdate=datetime.datetime.now)
 
 
@@ -122,7 +126,8 @@ class Identity(identity.IdentityDriverV8):
         https://blueprints.launchpad.net/keystone/+spec/sql-identiy-pam
 
         """
-        print('check password section 2') 
+        print('check password section 2')
+	LOG.info('Check password section 2 -sql.py file')
         return utils.check_password(password, user_ref.password)
 
     # Identity interface
@@ -343,7 +348,20 @@ class Identity(identity.IdentityDriverV8):
         user_id = userid
         session = sql.get_session()
         query = session.query(OTPTable.OTPvalue, OTPTable.time)
-        query = query.filter_by(userid=user_id)
+        query = query.filter_by(userid=user_id, auth_method='otp')
+        rv = query.first()
+
+        if rv:
+            return rv
+
+    def selectTOTP(self,userid):
+        """
+        selecting TOTP from table
+        """
+        user_id = userid
+        session = sql.get_session()
+        query = session.query(OTPTable.OTPvalue, OTPTable.time)
+        query = query.filter_by(userid=user_id, auth_method='totp')
         rv = query.first()
 
         if rv:
@@ -355,11 +373,24 @@ class Identity(identity.IdentityDriverV8):
 	""" 
         session = sql.get_session()
         query = session.query(Faileduser.time)
-        query = query.filter_by(userid=userid)
+        query = query.filter_by(userid=userid, auth_method='otp')
         rv = query.first()
 
         if rv:
             return rv
+
+    def userFailedTimeQuery(self,userid):
+        """
+        selecting user failed time 
+        """
+        session = sql.get_session()
+        query = session.query(Faileduser.time)
+        query = query.filter_by(userid=userid, auth_method='totp')
+        rv = query.first()
+
+        if rv:
+            return rv
+
 
     def get_def_proj_id_query(self,user_id):
 	"""
@@ -382,11 +413,27 @@ class Identity(identity.IdentityDriverV8):
         user_id = userid
         session = sql.get_session()
         query = session.query(OTPTable.time)
-        query = query.filter_by(userid=user_id)
+        query = query.filter_by(userid=user_id, auth_method='otp')
         rv = query.first()
 
         if rv:
             return rv
+
+    def lastTotpGeneratedTime(self, userid):
+        """
+        # Find the time at which an totp was last generated for this specific user
+        # @param userid - id of the user who has provided the username and password 
+        # @return - time at which the last otp for the user was generated
+        """
+        user_id = userid
+        session = sql.get_session()
+        query = session.query(OTPTable.time)
+        query = query.filter_by(userid=user_id, auth_method='totp')
+        rv = query.first()
+
+        if rv:
+            return rv
+
 
     def otpCountQuery(self,userid):
 	"""
@@ -394,21 +441,45 @@ class Identity(identity.IdentityDriverV8):
 	"""
         session = sql.get_session()
         query = session.query(func.count(OTPTable.OTPvalue))
-        query = query.filter_by(userid=userid)
+        query = query.filter_by(userid=userid, auth_method='otp')
         rv = query.first()
 
         if rv:
             return rv
+
+    def totpCountQuery(self,userid):
+        """
+        selecting TOTP count
+        """
+        session = sql.get_session()
+        query = session.query(func.count(OTPTable.OTPvalue))
+        query = query.filter_by(userid=userid, auth_method='totp')
+        rv = query.first()
+
+        if rv:
+            return rv
+
 
     def insertOtpQuery(self,userid,otp):
 	"""
 	Inserting OTP entry
 	"""
         session = sql.get_session()
-        newOtpEntry = OTPTable(userid = userid,
+        newOtpEntry = OTPTable(userid = userid, auth_method = 'otp', 
                     OTPvalue = otp )
         session.add(newOtpEntry)   
         session.flush()
+
+    def insertTotpQuery(self,userid,otp):
+        """
+        Inserting TOTP entry
+        """
+        session = sql.get_session()
+        newOtpEntry = OTPTable(userid = userid, auth_method = 'totp',
+                    OTPvalue = otp )
+        session.add(newOtpEntry)
+        session.flush()
+
 
     def updateOtpQuery(self,userid,otp):
 	"""
@@ -421,17 +492,42 @@ class Identity(identity.IdentityDriverV8):
         record.OTPvalue = otp
         session.flush()
 
+    def updateTotpQuery(self,userid,otp):
+        """
+        updating TOTP entry
+        """
+        session = sql.get_session()
+        u = session.query(OTPTable)
+        u = u.filter(OTPTable.userid==userid)
+        record = u.one()
+        record.OTPvalue = otp
+        session.flush()
+
+
     def failLoginCountQuery(self,userid):
 	"""
-	Fetching fail login count
+	Fetching fail login count for otp based logins
 	"""
         session = sql.get_session()
         query = session.query(func.count(Faillogin.userid))
-        query = query.filter_by(userid=userid)
+        query = query.filter_by(userid=userid, auth_method = 'otp')
         rv = query.first()
 
         if rv:
             return rv
+
+    def failLoginCountQuery(self,userid):
+        """
+        Fetching fail login count for totp based logins
+        """
+        session = sql.get_session()
+        query = session.query(func.count(Faillogin.userid))
+        query = query.filter_by(userid=userid, auth_method = 'totp')
+        rv = query.first()
+
+        if rv:
+            return rv
+
 
     def insertFailLoginQuery(self,userid):
 	"""
