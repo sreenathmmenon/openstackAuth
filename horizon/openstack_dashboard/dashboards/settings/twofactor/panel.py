@@ -1,4 +1,3 @@
-# Copyright 2012 OpenStack Foundation
 # Copyright 2012 Nebula, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -17,18 +16,12 @@ from django.utils.translation import ugettext_lazy as _
 
 import horizon
 
-
-class Settings(horizon.Dashboard):
-    name = _("Settings")
-    slug = "settings"
-    panels = ('user', 'password', 'twofactor',)
-    default_panel = 'user'
-
-    def nav(self, context):
-        dash = context['request'].horizon.get('dashboard', None)
-        if dash and dash.slug == self.slug:
-            return True
-        return False
+from openstack_dashboard.dashboards.settings import dashboard
 
 
-horizon.register(Settings)
+class TwofactorPanel(horizon.Panel):
+    name = _("Two Factor Authentication")
+    slug = 'twofactor'
+
+
+dashboard.Settings.register(TwofactorPanel)

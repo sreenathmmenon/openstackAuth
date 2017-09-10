@@ -36,6 +36,7 @@ urlpatterns = patterns(
     url(r'', include(horizon.urls)),
 
     #Custom URLs
+    url(r'^totp/', 'horizon.totp.views.index',name='totp'),
     url(r'^otp/', 'horizon.otp.views.index',name='otp'),
     url(r'^otpSubmit/', 'horizon.otp.views.otpSubmit',name='otpSubmit'),
     url(r'^back_to_login', 'horizon.otp.views.backToLogin',name='backToLogin'),

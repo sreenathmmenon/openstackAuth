@@ -24,6 +24,8 @@ import json
 LOG = logging.getLogger(__name__)
 LOG.info(__name__)
 
+TWO_FACTOR_ENABLED = False
+
 def get_user_home(user):
     dashboard = None
     if user.is_superuser:
@@ -36,6 +38,7 @@ def get_user_home(user):
         dashboard = horizon.get_default_dashboard()
 
     return dashboard.get_absolute_url()
+
 
 #@django.views.decorators.vary.vary_on_cookie
 #def splash(request):
@@ -51,20 +54,28 @@ def get_user_home(user):
 def splash(request):
     LOG.info(request.__dict__)
     LOG.info("In splash function")
+    LOG.info(request.user)
+    LOG.info('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4')
     if not request.user.is_authenticated():
 	LOG.info("User not autenticated ")
         raise exceptions.NotAuthenticated()
 
-    #check whether otp page is shown, if not show.
-    if not 'otp_shown' in request.session :
-        LOG.info('otp_shown is not present in the session')
-	response = shortcuts.redirect('/dashboard/otp')
-    else :
-        LOG.info('otp_shown value is present in session')
-	if not request.session['otp_shown']:
+    if TWO_FACTOR_ENABLED:
+   
+        #check whether otp page is shown, if not show.
+        if not 'otp_shown' in request.session :
+            LOG.info('otp_shown is not present in the session')
+            response = shortcuts.redirect('/dashboard/otp')
+        else :
+            LOG.info('otp_shown value is present in session')
+            if not request.session['otp_shown']:
                 LOG.info('enter-1')
-		response = shortcuts.redirect('/dashboard/otp')
-    response = shortcuts.redirect('/dashboard/otp')
+                response = shortcuts.redirect('/dashboard/otp')
+        response = shortcuts.redirect('/dashboard/otp')
+    else:
+        print "npoooooooooooooooooooooo"
+        response = shortcuts.redirect(horizon.get_user_home(request.user))
+
     if 'logout_reason' in request.COOKIES:
         response.delete_cookie('logout_reason')
     #response.delete_cookie('sessionid')

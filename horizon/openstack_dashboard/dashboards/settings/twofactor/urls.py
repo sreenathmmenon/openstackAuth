@@ -1,4 +1,3 @@
-# Copyright 2012 OpenStack Foundation
 # Copyright 2012 Nebula, Inc.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -13,22 +12,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from django.utils.translation import ugettext_lazy as _
+from django.conf.urls import patterns
+from django.conf.urls import url
 
-import horizon
-
-
-class Settings(horizon.Dashboard):
-    name = _("Settings")
-    slug = "settings"
-    panels = ('user', 'password', 'twofactor',)
-    default_panel = 'user'
-
-    def nav(self, context):
-        dash = context['request'].horizon.get('dashboard', None)
-        if dash and dash.slug == self.slug:
-            return True
-        return False
+from openstack_dashboard.dashboards.settings.twofactor import views
 
 
-horizon.register(Settings)
+urlpatterns = patterns(
+    '',
+    url(r'^$', views.TwoFactorAuthView.as_view(), name='index'))

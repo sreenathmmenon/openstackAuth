@@ -114,22 +114,44 @@ class UsageView(tables.DataTableView):
     """
 
     def render_to_response(self, context, **response_kwargs):
+	TWO_FACTOR_ENABLED = False
+	print("Render to response function")
+	
+        if TWO_FACTOR_ENABLED:
+	    print "Two factor enabled"
 
-        # Allow rendering only if OTP validation is success. Else redirect to OTP page
-        if 'otp_valid' in  self.request.session:
-            if self.request.session['otp_valid'] :
-                if self.request.GET.get('format', 'html') == 'csv':
-                    render_class = self.csv_response_class
-                    response_kwargs.setdefault("filename", "usage.csv")
-                else:
-                    render_class = self.response_class
-                context = self.render_context_with_title(context)
-                resp = render_class(request=self.request,
-                                    template=self.get_template_names(),
-                                    context=context,
-                                    content_type=self.get_content_type(),
-                                    **response_kwargs)
-                return resp
-        from django import shortcuts
-        return shortcuts.redirect("/otp")
+            # Allow rendering only if OTP validation is success. Else redirect to OTP page
+            if 'otp_valid' in  self.request.session:
+                if self.request.session['otp_valid'] :
+                    if self.request.GET.get('format', 'html') == 'csv':
+                        render_class = self.csv_response_class
+                        response_kwargs.setdefault("filename", "usage.csv")
+                    else:
+                        render_class = self.response_class
+                    context = self.render_context_with_title(context)
+                    resp = render_class(request=self.request,
+                                        template=self.get_template_names(),
+                                        context=context,
+                                        content_type=self.get_content_type(),
+                                        **response_kwargs)
+                    return resp
+            from django import shortcuts
+	    print("data returned")
+            return shortcuts.redirect("/dashboard/otp")
 
+	else:
+
+	    print "else part"
+            if self.request.GET.get('format', 'html') == 'csv':
+                render_class = self.csv_response_class
+                response_kwargs.setdefault("filename", "usage.csv")
+            else:
+                render_class = self.response_class
+            context = self.render_context_with_title(context)
+            resp = render_class(request=self.request,
+                                template=self.get_template_names(),
+                                context=context,
+                                content_type=self.get_content_type(),
+                                **response_kwargs)
+	    print("return part")
+            return resp

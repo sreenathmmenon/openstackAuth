@@ -165,21 +165,30 @@ class MultiTableView(MultiTableMixin, views.HorizonTemplateView):
     """
 
     def get(self, request, *args, **kwargs):
-	
-	# check whether the otp validation is success and redirect to home.
-	# Else redirect to OTP page.
-	print('Entering tables/views.py file')
-	print('Checking otp')
-        if 'otp_valid' in  self.request.session:
-            if self.request.session['otp_valid'] :
-                handled = self.construct_tables()
-                if handled:
-                    return handled
-                context = self.get_context_data(**kwargs)
-                return self.render_to_response(context)
-        from django import shortcuts
-        return shortcuts.redirect("/dashboard/otp")
 
+        TWO_FACTOR_ENABLED = False
+	
+	if TWO_FACTOR_ENABLED:	
+ 	    # check whether the otp validation is success and redirect to home.
+	    # Else redirect to OTP page.
+	    print('Entering tables/views.py file')
+	    print('Checking otp')
+            if 'otp_valid' in  self.request.session:
+                if self.request.session['otp_valid'] :
+                    handled = self.construct_tables()
+                    if handled:
+                        return handled
+                    context = self.get_context_data(**kwargs)
+                    return self.render_to_response(context)
+            from django import shortcuts
+            return shortcuts.redirect("/dashboard/otp")
+        else:
+	    print('Two Factor not enabled for this user')
+            handled = self.construct_tables()
+            if handled:
+                return handled
+            context = self.get_context_data(**kwargs)
+            return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
         # GET and POST handling are the same
