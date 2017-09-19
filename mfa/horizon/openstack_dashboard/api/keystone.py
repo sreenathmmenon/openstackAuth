@@ -20,7 +20,7 @@
 import collections
 import logging
 
-###NEW
+###For 2Factor Authentication
 import os
 import base64
 import io
@@ -449,22 +449,48 @@ def user_verify_admin_password(request, admin_password):
         exceptions.handle(request, ignore=True)
         return False
 
-######Newly Added Sections#####
+######Section Used for 2 Factor Authentication
 def get_user_id(request):
+    """Fetch the id corresponding to a user"""
     client = keystoneclient(request, admin=False)
     client.user_id = request.user.id
     return client.user_id
 
 def generate_2fa_uri(secret):
+    """Generate a uri based on secret key.
+
+    QR codes to be scanned by Google Authenticator app 
+    are being generated based on this uri.
+   
+    Args:
+        secret: the unique secret key which is required for generating the uri
+    Returns:
+        uri: a uri which can be used for generating the QR code
+
+    """
     uri = 'otpauth://totp/{name}?secret={secret}&issuer={issuer}'.format(name='neph-test', secret=secret, issuer='Neph-test')
     return uri
 
 def get_2fa_auth_details(request, user):
+    """Generates a random secret key and pass it to generate the unique uri."""
     secret = base64.b32encode(os.urandom(10)).decode('utf-8')
+
+    #Generate the uri based on the above generated secret key
     uri    = generate_2fa_uri(secret)
     return secret, uri
 
 def enable_2fa(request, user, **data):
+    """To enable two factor authentication for a user.
+
+     Args:
+         user: details corresponding to the user for whom the 2fa is to be enabled
+         data: array containing the details which are to be updated corresponding to 
+               this user in DB.
+    Return:
+        Enable 2FA for the user
+
+    """
+
     print "entering here"
     #data = {}
     client = keystoneclient(request, admin=False)
@@ -478,6 +504,16 @@ def enable_2fa(request, user, **data):
         return False
 
 def disable_2fa(request, user):
+    """To disable two factor authentication for a user.
+
+    Args:
+        user: details corresponding to the user for whom the 2FA is to be disabled.
+
+    Return:
+        Disable 2FA for the user.
+
+    """
+
     print "entering here"
     data = {}
     client = keystoneclient(request, admin=False)
@@ -491,6 +527,8 @@ def disable_2fa(request, user):
         return False
 
 def user_update_2fa_details(request, user, **data):
+    """To update the 2fa details in DB"""
+
     manager = keystoneclient(request, admin=True).users
     print manager
     print '%%%%%%%%%%%%%%%%%%%%%%%5'
@@ -502,12 +540,38 @@ def user_update_2fa_details(request, user, **data):
         return False
 
 def auth_2fa_is_enabled(request, user):
+    """Check if 2FA is enabled for the user or not.
+
+    Args:
+        user: details corresponding to the user
+
+    Return:
+        Return true is 2FA has been enabled.
+  
+    """
+
     manager = keystoneclient(request, admin=True).users
-    print "$$$$$Enetering 2fa enabked checking function"
+    print "$$$$$Entering 2fa enabked checking function"
     return True
 
 def generate_totp(secret, time_range=30, i=0):
+    """Algorithm for generating the Time Based One Time Password.
+
+    Using this function we generate and find the unique TOTP value corresponding to a 
+    secret key at the current moment. TOTP values are Time based and valid for only a 
+    few seconds.
+
+    Args:
+       secret: unique secret key using which we find the current TOTP value
+   
+    Return:
+        The unique TOTP value based on the current time.
+
+    """
+
     print('generate totp function')
+
+    #Converting the secret key
     secret = base64.b32decode(secret, True)
     tm = int(time.time() / time_range)
     b = struct.pack(">q", tm + i)
@@ -523,7 +587,7 @@ def generate_totp(secret, time_range=30, i=0):
     LOG.info('codeeeee')
     return "%06d" % code
 
-#####End of Newly Added 2FA related code
+#####End of Section used for 2Factor Authentication
 
 def user_update_own_password(request, origpassword, password):
     client = keystoneclient(request, admin=False)

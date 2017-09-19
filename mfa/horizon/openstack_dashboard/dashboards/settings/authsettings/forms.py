@@ -106,9 +106,9 @@ class TwofactorSettingsForm(forms.SelfHandlingForm):
 
 class Manage2FAForm(forms.SelfHandlingForm):
     print "Form section"
-    action = reverse_lazy('horizon:settings:multisettings:twofactor')
+    action = reverse_lazy('horizon:settings:authsettings:twofactor')
     description = 'Manage two-factor authentication'
-    template = 'settings/multisettings/_two_factor.html'
+    template = 'settings/authsettings/_two_factor.html'
 
     print "manage two factor"
     def clean(self):
@@ -167,13 +167,13 @@ class Manage2FAForm(forms.SelfHandlingForm):
 		print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 		print current_totp
                 context['hide'] = True
-                return shortcuts.render(request, 'settings/multisettings/_two_factor_newkey.html', context)
+                return shortcuts.render(request, 'settings/authsettings/_two_factor_newkey.html', context)
             else:
                 #cache_key = uuid.uuid4().hex
                 #cache.set(cache_key, (key, uri))
                 request.session['two_factor_data'] = secret
                 messages.success(request, "Two factor authentication was successfully enabled.")
-                return shortcuts.redirect('horizon:settings:multisettings:newkey')
+                return shortcuts.redirect('horizon:settings:authsettings:newkey')
 
         except Exception as e:
             exceptions.handle(request, 'error')
@@ -182,9 +182,9 @@ class Manage2FAForm(forms.SelfHandlingForm):
 
 
 class Disable2FAForm(forms.SelfHandlingForm):
-    action = reverse_lazy('horizon:settings:multisettings:twofactor_disable')
+    action = reverse_lazy('horizon:settings:authsettings:twofactor_disable')
     description = 'Disable two factor authentication'
-    template = 'settings/multisettings/_two_factor_disable.html'
+    template = 'settings/authsettings/_two_factor_disable.html'
 
     def handle(self, request, data):
             try:
@@ -195,7 +195,7 @@ class Disable2FAForm(forms.SelfHandlingForm):
 		api.keystone.disable_2fa(request, user)
                 messages.success(request, "Two factor authentication was successfully disabled for your account.")
                 LOG.info('Disabled two factor authentication')
-		return shortcuts.redirect('horizon:settings:multisettings:index')
+		return shortcuts.redirect('horizon:settings:authsettings:index')
 
             except Exception as e:
                 exceptions.handle(request, 'error')

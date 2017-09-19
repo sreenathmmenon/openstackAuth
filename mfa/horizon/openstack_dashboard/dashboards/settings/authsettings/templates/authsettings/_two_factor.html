@@ -3,7 +3,7 @@
     <p>Two Factor Authentication is already <b style = "color:green;">ENABLED</b> for your account.</p>
     <p>This options provides an extra level of security to your account. During login, you will be asked to enter a One Time Code obtained used Google Authenticator, Authy or similar apps. Please note that the code will be valid only for 30 seconds.</p>
     <p>You can disable this option by clicking the below option. However, it's not recommended due to security concerns.</p>
-    <button class="btn btn-danger always-enabled ajax-modal" href="{% url 'horizon:settings:multisettings:twofactor_disable' %}">Disable</button>
+    <button class="btn btn-danger always-enabled ajax-modal" href="{% url 'horizon:settings:authsettings:twofactor_disable' %}">Disable</button>
     <div class="clear"></div>
     <div class="clear"></div>
     <div class ="phone_otp_message" style="padding-top:2%;">
@@ -116,7 +116,7 @@
         e.preventDefault();
         $.ajax({
             type: "POST",
-            url: "{% url 'horizon:settings:multisettings:twofactor_disable' %}",
+            url: "{% url 'horizon:settings:authsettings:twofactor_disable' %}",
             dataType: 'html',
             beforeSend: beforeSend,
             complete: complete,
@@ -125,16 +125,6 @@
             },
             error: error
         });
-    });
-
-    $(document).on("click", "#two_factor_enable_modal, [data-dismiss='modal']", function(e) {
-        console.log("HOLA");
-        location.reload(true);
-    });
-
-    $(document).on("click", "#two_factor_enable_modal > .modal-dialog", function(e) {
-        console.log("ADIOS");
-        e.stopPropagation();
     });
 
 </script>

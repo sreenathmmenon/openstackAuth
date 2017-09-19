@@ -15,7 +15,7 @@
 from django.conf.urls import patterns
 from django.conf.urls import url
 
-from openstack_dashboard.dashboards.settings.multisettings import views
+from openstack_dashboard.dashboards.settings.authsettings import views
 
 
 urlpatterns = patterns(
