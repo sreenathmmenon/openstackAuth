@@ -1,0 +1,11 @@
+<form accept-charset="UTF-8" action="{{ form.action }}" method="post">{% csrf_token %}
+  <fieldset>
+    <legend></legend>
+    {% include "horizon/common/_form_fields.html" %}
+  </fieldset>
+  {% if forloop.last %}
+     Unhappy? <a href="{{ form.action }}" class="ajax-modal" rel="nofollow">Cancel my account</a>
+  {% else %}
+    <input class="btn btn-primary" type="submit" value="Update">
+  {% endif %}
+</form>
