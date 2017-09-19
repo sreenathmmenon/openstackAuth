@@ -54,7 +54,7 @@ def validate_code(request):
 	extra['secret_key'] = secret
         api.keystone.enable_2fa(request, user, **extra)
     else:
-  	    print 'falseeeeee'
+  	print 'falseeeeee'
         data['totp_authenticated'] = False
     return JsonResponse(data)
 
@@ -72,26 +72,26 @@ class Manage2FAView(forms.ModalFormView):
         context = super(Manage2FAView, self).get_context_data(**kwargs)
         print "after context"
 
-	    print "###################"
+	print "###################"
 
     	#Fetching the userid and using that to get the full user information	
-	    user_id = api.keystone.get_user_id(self.request)
+	user_id = api.keystone.get_user_id(self.request)
         user    = api.keystone.user_get(self.request, user_id)
 
-	    print "#################Views page #########################"
+	print "#################Views page #########################"
     	print user
     	print type(user.two_factor_enabled)
 
-	    #Checking whether user has enabled 2FA
+	#Checking whether user has enabled 2FA
      	two_factor_enabled = user.two_factor_enabled
 
     	#Fetching the user's phone number
     	user_phone_number  = user.phone
 
-	    #Converting to bool to fix errors
+	#Converting to bool to fix errors
     	if type(two_factor_enabled) == unicode:
-	        print "Entering the loop sinc etype is unicode"
-	        two_factor_enabled = self.str2bool(two_factor_enabled)
+	    print "Entering the loop sinc etype is unicode"
+	    two_factor_enabled = self.str2bool(two_factor_enabled)
 
     	#Set true if the user has enabled 2FA
     	if two_factor_enabled:
@@ -103,8 +103,8 @@ class Manage2FAView(forms.ModalFormView):
 
 
     def str2bool(self, v):
-	    """Function For converting unicode values to bool"""
-   	    print('Entering conversion function')
+        """Function For converting unicode values to bool"""
+   	print('Entering conversion function')
         return v.lower() in ("yes", "true", "t", "1")
 
 class Disable2FAView(forms.ModalFormView):
@@ -116,8 +116,8 @@ class Disable2FAView(forms.ModalFormView):
         user    = api.keystone.user_get(request, user_id)
 
         #user = fiware_api.keystone.user_get(self.request, user_id)
-	    if not user.two_factor_enabled:
-	        print "Two factor not enabled"
+	if not user.two_factor_enabled:
+	    print "Two factor not enabled"
             return redirect('horizon:settings:authsettings:index')
 
         print "returning section"
