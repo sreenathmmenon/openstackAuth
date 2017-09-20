@@ -19,9 +19,9 @@ import horizon
 from openstack_dashboard.dashboards.settings import dashboard
 
 
-class TwofactorPanel(horizon.Panel):
+class TwoFactorPanel(horizon.Panel):
     name = _("Two Factor Authentication")
     slug = 'authsettings'
 
 
-dashboard.Settings.register(TwofactorPanel)
+dashboard.Settings.register(TwoFactorPanel)
