@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}Get a new key for Two Factor Authentication{% endblock %}
+
+{% block page_header %}
+  {% include "horizon/common/_page_header.html" with title="New Key for Two Factor Authentication" %}
+
+{% endblock page_header %}
+
+{% block main %}
+  {% include "settings/authsettings/_two_factor_newkey.html" %}
+{% endblock %}
+

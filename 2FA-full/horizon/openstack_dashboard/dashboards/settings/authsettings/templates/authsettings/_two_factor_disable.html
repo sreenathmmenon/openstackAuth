@@ -1,0 +1,26 @@
+{% extends "horizon/common/_modal_form.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block form_id %}cancel_account_modal{% endblock %}
+{% block form_action %}{% url 'horizon:settings:authsettings:twofactor_disable' %}{% endblock %}
+
+{% block modal_id %}two_factor_disable{% endblock %}
+{% block modal-header %}Disable Two Factor Authentication{% endblock %}
+
+{% block modal-body %}
+<div class="left">
+    <fieldset>
+    {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+</div>
+<div class="right">
+    <p>Two factor authentication provides an extra layer of security to your account. Are you sure you want to disable it?</p>
+    <p>You can enable it again whenever you want.</p>
+</div>
+{% endblock %}
+
+{% block modal-footer %}
+    <button type="submit" class="btn btn-primary">Confirm</button>
+    {% if hide %}<a href="{% url 'horizon:settings:authsettings:twofactor' %}" class="btn btn-default secondary cancel">Cancel</a>{% endif %}
+{% endblock %}

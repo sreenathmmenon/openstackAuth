@@ -1,0 +1,133 @@
+<form accept-charset="UTF-8" action="{{ form.action }}" id="two_factor_form" method="post">{% csrf_token %}
+    {% if two_factor_enabled %}
+    <p>Two Factor Authentication is already <b style = "color:green;">ENABLED</b> for your account.</p>
+    <p>This options provides an extra level of security to your account. During login, you will be asked to enter a One Time Code obtained used Google Authenticator, Authy or similar apps. Please note that the code will be valid only for 30 seconds.</p>
+    <p>You can disable this option by clicking the below option. However, it's not recommended due to security concerns.</p>
+    <button class="btn btn-danger always-enabled ajax-modal" href="{% url 'horizon:settings:authsettings:twofactor_disable' %}">Disable</button>
+    <div class="clear"></div>
+    <div class="clear"></div>
+    <div class ="phone_otp_message" style="padding-top:2%;">
+        <p>Incase, if there are any issues while using Authenticator apps, you can opt for sending an OTP code to you phone for authentication. As per our records, your phone is <b><i>{{ user_phone_number }}</i></b>. Please contact our support team, if you want to update this number.</p>
+    </div>
+    <hr>
+    {% else %}
+    <p>You have this option <b style="color:red;">DISABLED</b>.</p>
+    <p>Enabling Two Factor Authentication will make your account Highly Secure. We recommend to enable this option.</p>
+    <fieldset>
+      {% include "horizon/common/_form_fields.html" %}
+    </fieldset>
+    <input class="btn btn-primary always-enabled" name="enable" type="submit" value="Configure Two-factor Authentication">
+    {% endif %}
+</form>
+<div id="result">
+</div>
+<!--<script src ="https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.3.1/sha.js" />-->
+
+<script type="text/javascript">
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    var csrftoken = getCookie('csrftoken');
+
+    // AJAX setup functions
+    var beforeSend = function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+        horizon.modals.modal_spinner(gettext("Loading"));
+    };
+    var complete = function(){
+        // Clear the global storage;
+        horizon.modals._request = null;
+        horizon.modals.spinner.modal('hide');
+    };
+    var error = function(jqXHR, status, errorThrown) {
+        if (jqXHR.status === 401){
+            var redir_url = jqXHR.getResponseHeader("X-Horizon-Location");
+            if (redir_url){
+                location.href = redir_url;
+            } else {
+                location.reload(true);
+            }
+        }
+        else {
+            if (!horizon.ajax.get_messages(jqXHR)) {
+                // Generic error handler. Really generic.
+                horizon.alert("danger", gettext("An error occurred. Please try again later."));
+            }
+        }
+    };
+
+    // Perform AJAX requests
+    $("[name='enable'], [name='new_key']").click(function(e){
+
+        e.preventDefault();
+
+        // If there's an existing modal request open, cancel it out.
+        if (horizon.modals._request && typeof(horizon.modals._request.abort) !== undefined) {
+            horizon.modals._request.abort();
+        }
+
+        var $form = $("#two_factor_form"),
+            data = $form.serialize() +
+                "&" + $(this).attr("name").toLowerCase() +
+                "=" + $(this).attr("name").toLowerCase();
+
+        horizon.modals._request = $.ajax({
+            type: "POST",
+            url: $form.attr('action'),
+            data: data,
+            dataType: 'html',
+            beforeSend: beforeSend,
+            complete: complete,
+            success: function(data, textStatus, jqXHR){
+                if (data.search("<div class=\"alert alert-message alert-danger\">") === -1){
+                    $form.closest(".modal").modal("hide");
+                    modal = horizon.modals.success(data, textStatus, jqXHR);
+                } else {
+                    $form.closest(".modal").modal("hide");
+                    $form.replaceWith(data)
+                }
+            },
+            error: error
+        });
+
+    });
+
+    $("body").on("click", ".cancel_newkey", function(e){
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "{% url 'horizon:settings:authsettings:twofactor_disable' %}",
+            dataType: 'html',
+            beforeSend: beforeSend,
+            complete: complete,
+            success: function(data, textStatus, jqXHR){
+                location.reload(true);
+            },
+            error: error
+        });
+    });
+
+</script>
+
+
+ 

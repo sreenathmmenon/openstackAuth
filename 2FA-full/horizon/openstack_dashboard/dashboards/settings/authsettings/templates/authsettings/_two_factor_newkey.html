@@ -1,0 +1,199 @@
+{% extends "horizon/common/_modal.html" %}
+{% block modal_id %}two_factor_enable_modal{% endblock %}
+{% block modal-header %}Setting up Two-Factor Authentication{% endblock %}
+
+{% block modal-body %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6 middle">
+      <h4>Get your app set</h5>
+      <div class="steps">
+        <div class="col-md-2 step">1</div>
+        <p class="col-md-10">Download and open an authentication app, e.g.: <b>Google Authenticator</b></p>
+	<p class="app-links" style="padding-left: 20%;">
+		<a href='https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&hl=en'><img style ="width:45%; height: 48px !important;" alt='Get it on Google Play' src='{{ STATIC_URL }}dashboard/img/google-play.png'/></a>
+
+<!--<a href='https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8tyle'><img style="width:57%;" alt='Downlaod from App Store' src='https://static1.squarespace.com/static/51ef28c5e4b04f8f7e2114d8/t/53b483cfe4b0a95d690053b0/1404339181456/Apple.png?format=500'/></a>-->
+<a href ='https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8tyle'><img style="width:46% !important; height: 46px !important;" class="app-store-download" src="{{ STATIC_URL }}dashboard/img/app-store.png" alt="Download from App Store"></a>
+	</p>
+      </div>
+      <div class="steps">
+        <div class="col-md-2 step">2</div>
+        <p class="col-md-10">Configure a new account using any of the following:</p>
+      </div>
+      <ul class="codes" style ="padding-left: 20%; text-align:center;">
+        <li><p>Scan this QR code</p>
+            {% if two_factor_qr_encoded %}
+            <p><img src="data:image/svg+xml;base64,{{ two_factor_qr_encoded }}" /></p>
+            {% endif %}
+        </li>
+          <li class ="key-display"><p>Insert this key manually</p>
+              {% if two_factor_key %}
+              <p class="manual_code"><strong>{{ two_factor_key }}</strong></p>
+              {% endif %}
+          </li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+
+      <h4>Access your account</h4>
+      <div class="steps">
+        <div class="col-md-2 step">3</div>
+            <p class="col-md-10">Every time you want to access your account, you will be asked for a verification code, which you can get from the authentication app you just configured.</p>
+      </div>
+
+      <h4>Enable 2 Factor</h4>
+      <div class="steps">
+          <div class="col-md-2 step">3</div>
+          <p class="col-md-10"><label>Enter the Confirmation code recieved in your mobile</label><input class="form-control" id="confirmation_code" type="text"></p>
+      </div>
+      </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+(function() {
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    //s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsSHA/2.3.1/sha.js';
+    s.src = 'https://caligatio.github.io/jsSHA/sha.js';
+    var x = document.getElementsByTagName('script')[0];
+    x.parentNode.insertBefore(s, x);
+})();
+
+</script>
+
+
+<script type="text/javascript">
+//$('.enable_2fa').attr('disabled', true);
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    };
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    var csrftoken = getCookie('csrftoken');
+
+
+$('#confirmation_code').bind('keypress', function (e) {
+   if (this.value.length>= 6) {
+       alert('Maximum limit is 6'); return false;
+   }
+   return !(e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57) && e.which != 46);
+});
+
+    // AJAX setup functions
+    var beforeSend = function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+        horizon.modals.modal_spinner(gettext("Verifying"));
+    };
+
+    var complete = function(){
+        // Clear the global storage;
+        //horizon.modals._request = null;
+        horizon.modals.spinner.modal('hide');
+    };
+
+
+/*
+//Validation to accept only numbers
+    $("#confirmation_code").keydown(function (e) {
+        // Allow: backspace, delete, tab, escape, enter and .
+        if ($.inArray(e.keyCode, [46, 8, 9, 27, 13, 110, 190]) !== -1 ||
+             // Allow: Ctrl+A, Command+A
+            (e.keyCode === 65 && (e.ctrlKey === true || e.metaKey === true)) || 
+             // Allow: home, end, left, right, down, up
+            (e.keyCode >= 35 && e.keyCode <= 40)) {
+                 // let it happen, don't do anything
+                 return;
+        }
+        // Ensure that it is a number and stop the keypress
+        if ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105)) {
+            e.preventDefault();
+        }
+    });
+
+
+
+var max_chars = 6;
+
+//Validation to accpet onlyu 6 digits for confiramtion code
+$('#confirmation_code').keydown( function(e){
+    if ($(this).val().length >= max_chars) { 
+        $(this).val($(this).val().substr(0, max_chars));
+    }
+});
+
+$('#confirmation_code').keyup( function(e){
+    if ($(this).val().length >= max_chars) { 
+        $(this).val($(this).val().substr(0, max_chars));
+    }
+});
+*/
+
+//$("#confirmation_code").change(function() {
+$(".enable_2fa").click(function() {
+    var auth_code = $('#confirmation_code').val();
+    var secret = $('.manual_code').text();
+    //alert(auth_code);
+    //alert('test');
+    console.log(auth_code);
+
+     $.ajax({
+        url: '/dashboard/settings/authsettings/ajax/validate_code/',
+        data: {
+          'auth_code': auth_code,
+          'secret': secret
+        },
+        dataType: 'json',
+        //beforeSend: beforeSend,
+        //complete: complete,
+        success: function (data) {
+          if (data.totp_authenticated) {
+            alert('Success! Codes are matching. Redirecting you back to the 2FA page. Please wait');
+            //location.reload();
+            $('.enable_2fa').removeAttr("disabled");
+	    setTimeout(function(){// wait for 5 secs(2)
+               location.reload(); // then reload the page.(3)
+            }, 1000); 
+            //$('.enable_2fa').removeAttr("disabled");
+          } else {
+            $('#confirmation_code').val("");
+            //$('.enable_2fa').attr('disabled', true);
+            alert('Code Mismatch!. Please re-enter the code from your 2FA app or else go back and regenerate the Key');
+          }
+        }
+      });
+});
+
+</script>
+
+{% endblock %}
+
+{% block modal-footer %}
+    {% if hide %}
+      <!--<a href="{% url 'horizon:settings:authsettings:index' %}" class="btn btn-primary enable_2fa">Enable Two-Factor Authentication</a>-->
+          <a class="btn btn-primary enable_2fa">Enable Two-Factor Authentication</a>
+      <!--<a href="#" class="btn btn-default secondary cancel_newkey">Cancel</a>-->
+      {% endif %}
+{% endblock %}
