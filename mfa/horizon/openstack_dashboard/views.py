@@ -18,10 +18,21 @@ import django.views.decorators.vary
 import horizon
 from horizon import base
 from horizon import exceptions
+import logging
+import json
 
+#Newly added
+from openstack_dashboard import api
+
+LOG = logging.getLogger(__name__)
+LOG.info(__name__)
+
+TWO_FACTOR_ENABLED = True
 
 def get_user_home(user):
     dashboard = None
+
+    LOG.info('get user home function')
     if user.is_superuser:
         try:
             dashboard = horizon.get_dashboard('admin')
@@ -33,13 +44,105 @@ def get_user_home(user):
 
     return dashboard.get_absolute_url()
 
-
+"""
 @django.views.decorators.vary.vary_on_cookie
 def splash(request):
+    LOG.info('Inside splash function -views.py file')
     if not request.user.is_authenticated():
+	LOG.info('user authenticated check failed')
         raise exceptions.NotAuthenticated()
-
+    LOG.info('redirect to dashboard')
     response = shortcuts.redirect(horizon.get_user_home(request.user))
     if 'logout_reason' in request.COOKIES:
         response.delete_cookie('logout_reason')
     return response
+"""
+
+@django.views.decorators.vary.vary_on_cookie
+def splash(request):
+    LOG.info(request.__dict__)
+    LOG.info("In splash function")
+    LOG.info(request.user)
+    LOG.info('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4')
+    if not request.user.is_authenticated():
+	LOG.info("User not autenticated ")
+        raise exceptions.NotAuthenticated()
+    
+
+    user_id = api.keystone.get_user_id(request)
+    LOG.info('############################################')
+    LOG.info(user_id)
+    LOG.info(request.user)
+    LOG.info('##############################################')
+
+    #Login case
+    if TWO_FACTOR_ENABLED:
+   
+        #Check whether 2factor page is shown. If else show it
+        if not 'totp_shown' in request.session :
+            LOG.info('totp_shown is not present in the session')
+            #response = shortcuts.redirect('/dashboard/otp')
+	    LOG.info('redirecting to 2 factor form display page')
+            response = shortcuts.redirect('/dashboard/twofactor')
+        else :
+            LOG.info('totp_shown value is present in session')
+            if not request.session['totp_shown']:
+                LOG.info('since totp_shown value is not present inside the request.session')
+		LOG.info('redirecting users to twofactor form display page')
+	        response = shortcuts.redirect('/dashboard/twofactor')
+	LOG.info('default condition to redirect the users to two factor page')
+	response = shortcuts.redirect('/dashboard/twofactor')
+    else:
+        print "Redirecting users to their home page/dashboard since 2FA isn't enabled"
+        response = shortcuts.redirect(horizon.get_user_home(request.user))
+
+    #Logout case
+    if 'logout_reason' in request.COOKIES:
+        response.delete_cookie('logout_reason')
+
+    #Return the response corresponding to all above conditions
+    return response
+
+def callKeystoneForTotp(request):
+        """TOTP CHECK"""
+        try:
+                import urllib2
+                totpVal = request.GET.get("totp","")
+                LOG.info('TOTP value is ')
+                LOG.info(totpVal)
+
+                username = 'admin'
+                password = 'demo'
+
+                data = '{ "auth": { "identity":{ "twofactor": {"totp_value": "' + str(totpVal) + '"}, "methods": ["password","twofactor"],"password": {"user": {"name": "' + username + '","domain": { "id": "default" },"password": "'+password+'"}} } }  }'
+                url = 'http://localhost:5000/v3/auth/tokens'
+                req = urllib2.Request(url, data, {'Content-Type': 'application/json'})
+                LOG.info('req')
+                try :
+                    LOG.info('Entering try')
+                    f = urllib2.urlopen(req)
+                    LOG.info('HERE IN F')
+                    for x in f:
+                        LOG.info('x section')
+                        request.session['totp_valid'] = True
+                        request.session['totp_invalid'] = False
+                        print "****"
+                        print(x)
+                    f.close()
+                except Exception, e :
+                    #print e
+                    #request.session['otp_invalid'] = True
+                    #request.session['otp_valid'] = False
+                    LOG.info('exception section')
+                    LOG.info(e)
+                    return False
+
+                LOG.info('session printing')
+                LOG.info(request.session)
+                response = shortcuts.redirect(horizon.get_user_home(request.user))
+                return response
+        except Exception,e:
+                LOG.debug("Error occured while connecting to Keystone")
+                response = shortcuts.redirect('/dashboard/totp')
+                return response
+

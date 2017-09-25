@@ -55,34 +55,15 @@ class PageTitleMixin(object):
             context["page_title"] = temp.render(con)
         return context
 
-    #def render_to_response(self, context):
-        """This is an override of the default render_to_response function that
-        exists in the django generic views, this is here to inject the
-        page title into the context before the main template is rendered.
-        """
-
-        #context = self.render_context_with_title(context)
-        #return super(PageTitleMixin, self).render_to_response(context)
-
     def render_to_response(self, context):
         """This is an override of the default render_to_response function that
         exists in the django generic views, this is here to inject the
         page title into the context before the main template is rendered.
         """
 
+        context = self.render_context_with_title(context)
+        return super(PageTitleMixin, self).render_to_response(context)
 
-        print "render to response function"
-	print self.request.session
-	print "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-	
-        if 'totp_valid' in  self.request.session:
-	    print 'I entered the totp loop of render to response directory'
-            if self.request.session['totp_valid'] :
-                context = self.render_context_with_title(context)
-                return super(PageTitleMixin, self).render_to_response(context)
-
-        from django import shortcuts
-        return shortcuts.redirect("/dashboard/otp")
 
 class HorizonTemplateView(PageTitleMixin, generic.TemplateView):
     pass
@@ -94,19 +75,7 @@ class HorizonFormView(PageTitleMixin, generic.FormView):
 
 def user_home(request):
     """Reversible named view to direct a user to the appropriate homepage."""
-    #return shortcuts.redirect(horizon.get_user_home(request.user))
-
-    print('Entering user_home function')
-    print('otp_valid check')
-    # Allow only if otp validation is success
-
-    # Allow only if otp validation is success
-    if "totp_valid" in request.session :
-        print "i am here in totp_valid check of user_home directory"
-	if request.session['totp_valid'] :
-            return shortcuts.redirect(horizon.get_user_home(request.user))
-
-    return shortcuts.redirect("/dashboard/otp")
+    return shortcuts.redirect(horizon.get_user_home(request.user))
 
 
 class APIView(HorizonTemplateView):

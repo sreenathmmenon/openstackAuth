@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "TwoFactor" %}{% endblock %}
+{% block css %}
+
+{% endblock %}
+
+{% block body_id %}twofactor{% endblock %}
+
+{% block content %}
+	{% include 'auth/_twofactor.html' %}
+{% endblock %}
+
+

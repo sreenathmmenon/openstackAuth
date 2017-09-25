@@ -28,20 +28,13 @@ from django.conf.urls import url
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns  # noqa
 
 import horizon
-print "Url redirections"
+
 urlpatterns = patterns(
     '',
     url(r'^$', 'openstack_dashboard.views.splash', name='splash'),
     url(r'^api/', include('openstack_dashboard.api.rest.urls')),
     url(r'', include(horizon.urls)),
-
-    #Custom URLs
-    url(r'^twofactor/', 'horizon.twofactor.views.index',name='twofactor'),
-    url(r'^totpSubmit/', 'horizon.twofactor.views.totpSubmit', name='totpSubmit'),
-    #url(r'^back_to_login', 'horizon.otp.views.backToLogin',name='backToLogin'),
 )
-
-print "completed the redirections" 
 
 for u in getattr(settings, 'AUTHENTICATION_URLS', ['openstack_auth.urls']):
     urlpatterns += patterns(

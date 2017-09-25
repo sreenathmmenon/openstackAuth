@@ -155,44 +155,12 @@ class MultiTableView(MultiTableMixin, views.HorizonTemplateView):
         # with the view as normal.
         return None
 
-    """
     def get(self, request, *args, **kwargs):
-        print('Inside get function of MultiTableView')
         handled = self.construct_tables()
         if handled:
             return handled
         context = self.get_context_data(**kwargs)
-	print('render to responsee')
         return self.render_to_response(context)
-    """
-
-    def get(self, request, *args, **kwargs):
-
-        TWO_FACTOR_ENABLED = True
-	
-	if TWO_FACTOR_ENABLED:	
- 	    # check whether the totp validation is success and redirect to home.
-	    # Else redirect to tOTP page.
-	    print('Entering tables/views.py file')
-	    print('Checking totp')
-
-            if 'totp_valid' in  self.request.session:
-                if self.request.session['totp_valid'] :
-                    handled = self.construct_tables()
-                    if handled:
-                        return handled
-                    context = self.get_context_data(**kwargs)
-                    return self.render_to_response(context)
-
-            from django import shortcuts
-            return shortcuts.redirect("/dashboard/twofactor")
-        else:
-	    print('Two Factor not enabled for this user')
-            handled = self.construct_tables()
-            if handled:
-                return handled
-            context = self.get_context_data(**kwargs)
-            return self.render_to_response(context)
 
     def post(self, request, *args, **kwargs):
         # GET and POST handling are the same
