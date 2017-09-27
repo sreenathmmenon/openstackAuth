@@ -1200,7 +1200,7 @@ def configure(conf=None):
         conf = CONF
 
     conf.register_cli_opt(
-        cfg.BoolOpt('standard-threads', default=True,
+        cfg.BoolOpt('standard-threads', default=False,
                     help='Do not monkey-patch threading system modules.'))
     conf.register_cli_opt(
         cfg.StrOpt('pydev-debug-host',

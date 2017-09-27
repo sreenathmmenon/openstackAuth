@@ -46,7 +46,6 @@ class ExternalAuthNotApplicable(Exception):
                      'trust_api')
 class Auth(controller.V2Controller):
 
-    LOG.info('Auth Controller')
     @controller.v2_deprecated
     def ca_cert(self, context, auth=None):
         ca_file = open(CONF.signing.ca_certs, 'r')
@@ -63,7 +62,6 @@ class Auth(controller.V2Controller):
 
     @controller.v2_deprecated
     def authenticate(self, context, auth=None):
-        LOG.info('in the autehnticate function')
         """Authenticate credentials and return a token.
 
         Accept auth as a dict that looks like::
@@ -91,7 +89,6 @@ class Auth(controller.V2Controller):
 
         if "token" in auth:
             # Try to authenticate using a token
-            LOG.info('authenticating using a token')
             auth_info = self._authenticate_token(
                 context, auth)
         else:
@@ -263,9 +260,6 @@ class Auth(controller.V2Controller):
 
         Returns auth_token_data, (user_ref, tenant_ref, metadata_ref)
         """
-	print('Local Authentication - sql method')
-	print auth
-	print '$$$$$$$$$$$$$$$4'
         if 'passwordCredentials' not in auth:
             raise exception.ValidationError(
                 attribute='passwordCredentials', target='auth')
@@ -326,7 +320,6 @@ class Auth(controller.V2Controller):
 
         Returns auth_token_data, (user_ref, tenant_ref, metadata_ref)
         """
-	print('Authenticate External method')
         environment = context.get('environment', {})
         if not environment.get('REMOTE_USER'):
             raise ExternalAuthNotApplicable()

@@ -19,12 +19,10 @@ from keystone.common import utils
 from keystone import exception
 from keystone.i18n import _
 from keystone import identity
-from sqlalchemy import func
-import datetime
-from oslo_log import log
+
+
 CONF = cfg.CONF
 
-LOG = log.getLogger(__name__)
 
 class User(sql.ModelBase, sql.DictBase):
     __tablename__ = 'user'
@@ -71,6 +69,7 @@ class UserGroupMembership(sql.ModelBase, sql.DictBase):
                           sql.ForeignKey('group.id'),
                           primary_key=True)
 
+
 class Identity(identity.IdentityDriverV8):
     # NOTE(henry-nash): Override the __init__() method so as to take a
     # config parameter to enable sql to be used as a domain-specific driver.
@@ -94,8 +93,6 @@ class Identity(identity.IdentityDriverV8):
         https://blueprints.launchpad.net/keystone/+spec/sql-identiy-pam
 
         """
-        print('check password section 2')
-	LOG.info('Check password section 2 -sql.py file')
         return utils.check_password(password, user_ref.password)
 
     # Identity interface
@@ -322,9 +319,9 @@ class Identity(identity.IdentityDriverV8):
             return rv
 
     def get_def_proj_id_query(self,user_id):
-	"""
-	Getting project ID
-	"""
+        """
+        Getting project ID
+        """
         session = sql.get_session()
         query = session.query(User.default_project_id)
         query = query.filter_by(id=user_id)
