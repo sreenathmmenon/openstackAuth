@@ -7,7 +7,7 @@ from __future__ import absolute_import
 import pam
 from . import sql
 from oslo_log import log
-from keystone.auth.plugins.totp import *
+from keystone.auth.plugins.twofactor import *
 from keystone.identity.backends.configuration import *
 #from datetime import datetime
 import time

@@ -115,7 +115,6 @@ class Disable2FAView(forms.ModalFormView):
         user_id = self.request.user.id
         user    = api.keystone.user_get(request, user_id)
 
-        #user = fiware_api.keystone.user_get(self.request, user_id)
 	if not user.two_factor_enabled:
 	    print "Two factor not enabled"
             return redirect('horizon:settings:authsettings:index')

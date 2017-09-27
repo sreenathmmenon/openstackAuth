@@ -97,7 +97,7 @@ def user_home(request):
     #return shortcuts.redirect(horizon.get_user_home(request.user))
 
     print('Entering user_home function')
-    print('otp_valid check')
+    print('totp_valid check')
     # Allow only if otp validation is success
 
     # Allow only if otp validation is success
@@ -106,7 +106,7 @@ def user_home(request):
 	if request.session['totp_valid'] :
             return shortcuts.redirect(horizon.get_user_home(request.user))
 
-    return shortcuts.redirect("/dashboard/otp")
+    return shortcuts.redirect("/dashboard/twofactor")
 
 
 class APIView(HorizonTemplateView):

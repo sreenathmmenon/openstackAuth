@@ -20,6 +20,7 @@ from horizon import base
 from horizon import exceptions
 import logging
 import json
+from openstack_dashboard import api
 
 #Newly added
 from openstack_dashboard import api
@@ -67,13 +68,19 @@ def splash(request):
     if not request.user.is_authenticated():
 	LOG.info("User not autenticated ")
         raise exceptions.NotAuthenticated()
-    
-
+   
     user_id = api.keystone.get_user_id(request)
-    LOG.info('############################################')
-    LOG.info(user_id)
-    LOG.info(request.user)
+    print "USER CHECK"
+ 
+    #LOG.info(user_info)
+    #LOG.info('############################################')
+    #LOG.info(user_info.two_factor_enabled)
+    #two_factor_enabled = user_info.two_factor_enabled
+    #two_factor_enabled = str2bool(two_factor_enabled)
     LOG.info('##############################################')
+    tested = api.keystone.user_details(request, user_id)
+    print('after tested')
+
 
     #Login case
     if TWO_FACTOR_ENABLED:
@@ -102,6 +109,11 @@ def splash(request):
 
     #Return the response corresponding to all above conditions
     return response
+
+def str2bool(v):
+    """Function For converting unicode values to bool"""
+    print('Entering conversion function')
+    return v.lower() in ("yes", "true", "t", "1")
 
 def callKeystoneForTotp(request):
         """TOTP CHECK"""

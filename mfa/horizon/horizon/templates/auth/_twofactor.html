@@ -1,52 +1,86 @@
 {% load i18n %}
 
 
+
 {% block modal-body %}
-<div class="outer" style=" display: table;position: absolute;height: 80%;width: 100%;">
-<div class="middle" style="display: table-cell;vertical-align: middle;">
-	<form name= 'totp_submit' action='/dashboard/totpSubmit' style=" margin-left: auto;
-    margin-right: auto;
-    width: 440px !important;
-    background-color: #b0e0e6;text-align: center;background-image: -ms-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+<style>
 
-/* Mozilla Firefox */ 
-background-image: -moz-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+#twofactor {
+    background-color: #0c4da2;
+}
 
-/* Opera */ 
-background-image: -o-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+#totp {
+    height: 30px !important;
+    padding-left: 1%;
+}
+.totp_submit_btn {
+    padding-left: 18px;
+    padding-right: 18px;
+    color: #fff;
+    background: #f36f21;
+    border: 0px;
+    border-radius: 5px;
+    height: 33px;
+}
 
-/* Webkit (Safari/Chrome 10) */ 
-background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, #F2DEDE));
+.totp_section {
+    margin-top:5% !important;
+}
 
-/* Webkit (Chrome 11+) */ 
-background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+#totp, .totp_submit_btn {
+    width: 90% !important;
+    max-width: 90% !important;
+}
 
-/* W3C Markup, IE10 Release Preview */ 
-background-image: linear-gradient(to bottom, #FFFFFF 0%, #F2DEDE 100%);padding: 50px;border: 1px solid #eee;border-radius: 5px;">
-	<h3>Two-factor authentication</h3>
-	<!--<div class="for_image" style="padding-bottom: 15px;"><img src="/static/dashboard/img/logo-splash.png"></div>-->
-	{% if request.session.totp_invalid %}
-		<span style= "color:red;font-size:12px;">Entered token is either invalid/expired! </span><br/><br/> 
-	{% endif %}
-	<p class="overview" style = "margin-bottom:22px !important;">Enter code from Google Authenticator or Authy app here</p>
-	<div class="form-group" style ="position:relative; margin-bottom: 20px; !important;">
-		<label for="code">Two factor code</label>
-		<div class="input-icon icon-sms"></div>
-		<!--<span> Enter OTP </span>-->
-		<input type="text" name="totp" value="" style="border: 1px solid #8e8e8e;border-radius: 5px;height: 20px;width: 15%; margin-top: 1%;"/>  
-	</div>
-	<!--<input class="" type="submit" id="" style="" value="Verify" name="Submit" style="border: 1px solid #8e8e8e;border-radius: 5px">-->
-	<button class="btn btn-primary btn-lg btn-block" name="submit" tabindex="2" type="submit" style="padding-left: 18px; padding-right: 18px;">Verify TOTP Code</button>
-<br/>
-<!--<a style="float:right;color: black;" href="/dashboard/back_to_login">re-login</a>-->
-<br />
-Don't have access to your authenticator app?
+</style>
 
-<a href="/dashboard/otp">Get a code via SMS</a>
+<script type="text/javascript">
 
-</form>
-</div>
+$('#totp').bind('keypress', function (e) {
+   if (this.value.length>= 6) {
+       alert('Maximum limit is 6'); return false;
+   }
+   return !(e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57) && e.which != 46);
+});
+
+</script>
+<div class="outer" style="display: table-cell; position: absolute; left : 38%; top : 30%;">
+	<!--<div class="middle"
+		style="display: table-cell; vertical-align: middle;">-->
+		<form name='totp_submit' action='/dashboard/totpSubmit'
+			style="margin: 0 auto !important; width: 290px !important; padding: 5% 13% 14% 13%; background-color: #b0e0e6; text-align: center; background-image: -ms-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+	/* Mozilla Firefox */ background-image: -moz-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+	/* Opera */ background-image: -o-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+	/* Webkit (Safari/Chrome 10) */ background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFFFFF), color-stop(1, #F2DEDE));
+	/* Webkit (Chrome 11+) */ background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #F2DEDE 100%);
+	/* W3C Markup, IE10 Release Preview */ background-image: linear-gradient(to bottom, #FFFFFF 0%, #F2DEDE 100%); border: 1px solid #eee; border-radius: 5px; box-shadow: 0 3px 7px rgba(0, 0, 0, 0.38); font-family: Helvetica;">
+			<h3>Two-factor authentication</h3>
+			
+			<!--<div class="for_image" style="padding-bottom: 15px;"><img src="/static/dashboard/img/logo-splash.png"></div>-->
+			
+			{% if request.session.totp_invalid %} <span
+				style="color: red; font-size: 12px;">Entered code is either
+				invalid/expired! </span><br />
+			<br />
+			{% endif %}
+			
+			<p class="overview" style="margin-bottom: 22px !important; font-size: 14px !important;">Enter
+				code from Google Authenticator or Authy app here</p>
+			<div class="form-group totp_section"
+				style="position: relative; margin-bottom: 20px; !important;">
+				<div class="input-icon icon-sms"></div>
+				<!--<span> Enter OTP </span>-->
+				<input type="text" id="totp" name="totp" placeholder= "Two-factor code" value=""
+					style="border: 1px solid #8e8e8e; border-radius: 5px; height: 20px; width: 15%; margin-top: 1%; text-align: center;" />
+			</div>
+			<!--<input class="" type="submit" id="" style="" value="Verify" name="Submit" style="border: 1px solid #8e8e8e;border-radius: 5px">-->
+			<button class="btn btn-primary btn-lg btn-block totp_submit_btn" name="submit"
+				tabindex="2" type="submit"
+				style="padding-left: 18px; padding-right: 18px;">Verify</button>
+			<br />
+			<!--<a style="float:right;color: black;" href="/dashboard/back_to_login">re-login</a>-->
+
+		</form>
+<!--	</div>-->
 </div>
 {% endblock %}
-
-

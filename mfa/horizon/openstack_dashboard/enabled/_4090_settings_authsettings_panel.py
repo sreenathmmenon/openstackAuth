@@ -9,4 +9,4 @@ ADD_PANEL = 'openstack_dashboard.dashboards.settings.authsettings.panel.TwoFacto
 
 #If set to True, the PANEL will be removed from PANEL_DASHBOARD/PANEL_GROUP.
 #Set the below option to TRUE if Two factor authentication management shouldn't be displayed
-REMOVE_PANEL = True
+REMOVE_PANEL = False

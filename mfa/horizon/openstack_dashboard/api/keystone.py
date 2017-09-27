@@ -159,16 +159,24 @@ def keystoneclient(request, admin=False):
     request/response cycle don't have to be re-authenticated.
     """
     user = request.user
+    print('1')
     if admin:
+        print('2')
+        
         if not policy.check((("identity", "admin_required"),), request):
+            print('3')
             raise exceptions.NotAuthorized
+        
         endpoint_type = 'adminURL'
     else:
+        print('4')
         endpoint_type = getattr(settings,
                                 'OPENSTACK_ENDPOINT_TYPE',
                                 'internalURL')
 
     api_version = VERSIONS.get_active_version()
+    print api_version
+    print('api version -5')
 
     # Take care of client connection caching/fetching a new client.
     # Admin vs. non-admin clients are cached separately for token matching.
@@ -177,8 +185,10 @@ def keystoneclient(request, admin=False):
     if (hasattr(request, cache_attr) and
         (not user.token.id or
          getattr(request, cache_attr).auth_token == user.token.id)):
+        print('6')
         conn = getattr(request, cache_attr)
     else:
+        print('7')
         endpoint = _get_endpoint_url(request, endpoint_type)
         insecure = getattr(settings, 'OPENSTACK_SSL_NO_VERIFY', False)
         cacert = getattr(settings, 'OPENSTACK_SSL_CACERT', None)
@@ -191,7 +201,10 @@ def keystoneclient(request, admin=False):
                                             cacert=cacert,
                                             auth_url=endpoint,
                                             debug=settings.DEBUG)
+        print('8')
+	print(conn.__dict__)
         setattr(request, cache_attr, conn)
+    print(conn.__dict__)
     return conn
 
 
@@ -455,6 +468,16 @@ def get_user_id(request):
     client = keystoneclient(request, admin=False)
     client.user_id = request.user.id
     return client.user_id
+
+def user_details(request, user_id, admin=False):
+    """Fetch the information of any user"""
+    print policy.check((("identity", "user_details"),),request)
+
+    print('user_details function entering')
+    user = keystoneclient(request, admin=False).users.get(user_id)
+    return VERSIONS.upgrade_v2_user(user)
+
+
 
 def generate_2fa_uri(secret):
     """Generate a uri based on secret key.
