@@ -20,6 +20,8 @@ from horizon import views
 
 from horizon.templatetags.horizon import has_permissions  # noqa
 
+###For 2FA
+from openstack_dashboard import api
 
 class MultiTableMixin(object):
     """A generic mixin which provides methods for handling DataTables."""
@@ -169,8 +171,21 @@ class MultiTableView(MultiTableMixin, views.HorizonTemplateView):
     def get(self, request, *args, **kwargs):
 
         TWO_FACTOR_ENABLED = True
+        user_id = api.keystone.get_user_id(request)
+        user_details = api.keystone.user_details(request, user_id)
+        if user_details.two_factor_enabled:
+            #two_factor_enabled = str2bool(two_factor_enabled)
+            two_factor_enabled = v.lower() in ("yes", "true", "t", "1")
+            print two_factor_enabled
+        else:
+            two_factor_enabled = False
+
+        print user_details.two_factor_enabled
+        print '%%%%%%%%%%%%%%%%%%%%%%%%%'
+        print two_factor_enabled
+        print('after tested')
 	
-	if TWO_FACTOR_ENABLED:	
+	if two_factor_enabled:	
  	    # check whether the totp validation is success and redirect to home.
 	    # Else redirect to tOTP page.
 	    print('Entering tables/views.py file')

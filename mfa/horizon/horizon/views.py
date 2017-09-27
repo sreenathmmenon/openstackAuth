@@ -82,7 +82,7 @@ class PageTitleMixin(object):
                 return super(PageTitleMixin, self).render_to_response(context)
 
         from django import shortcuts
-        return shortcuts.redirect("/dashboard/otp")
+        return shortcuts.redirect("/dashboard/twofactor")
 
 class HorizonTemplateView(PageTitleMixin, generic.TemplateView):
     pass

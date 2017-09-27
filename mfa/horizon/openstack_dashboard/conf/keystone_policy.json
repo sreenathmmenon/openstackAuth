@@ -6,7 +6,8 @@
     "admin_or_owner": "rule:admin_required or rule:owner",
 
     "default": "rule:admin_required",
-    "user_details": "",
+
+    "identity:user_details": "",
 
     "identity:get_region": "",
     "identity:list_regions": "",

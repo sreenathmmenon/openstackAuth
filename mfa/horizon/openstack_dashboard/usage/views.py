@@ -97,8 +97,6 @@ class UsageView(tables.DataTableView):
             context['simple_tenant_usage_enabled'] = True
         return context
 
-   
-     
     def render_to_response(self, context, **response_kwargs):
         if self.request.GET.get('format', 'html') == 'csv':
             render_class = self.csv_response_class
@@ -112,53 +110,3 @@ class UsageView(tables.DataTableView):
                             content_type=self.get_content_type(),
                             **response_kwargs)
         return resp
-    
-    """
-    def render_to_response(self, context, **response_kwargs):
-	TWO_FACTOR_ENABLED = True
-	print("Render to response function")
-	
-        if TWO_FACTOR_ENABLED:
-	    print "Two factor enabled"
-
-
-            if 'totp_valid' in self.request.session:
-                print 'totp loop'
-		if self.request.session['totp_valid'] :
-                    if self.request.GET.get('format', 'html') == 'csv':
-                        render_class = self.csv_response_class
-                        response_kwargs.setdefault("filename", "usage.csv")
-                    else:
-                        render_class = self.response_class
-                    context = self.render_context_with_title(context)
-                    resp = render_class(request=self.request,
-                                        template=self.get_template_names(),
-                                        context=context,
-                                        content_type=self.get_content_type(),
-                                        **response_kwargs)
-
-   		    return resp
-
-            from django import shortcuts
-	    print("data returned")
-	    print '4444444444444444444444444'
-            return shortcuts.redirect("/dashboard/twofactor")
-
-	else:
-
-	    print "else part"
-            if self.request.GET.get('format', 'html') == 'csv':
-                render_class = self.csv_response_class
-                response_kwargs.setdefault("filename", "usage.csv")
-            else:
-                render_class = self.response_class
-            context = self.render_context_with_title(context)
-            resp = render_class(request=self.request,
-                                template=self.get_template_names(),
-                                context=context,
-                                content_type=self.get_content_type(),
-                                **response_kwargs)
-	    print("return part")
-            return resp
-      """
-

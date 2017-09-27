@@ -52,7 +52,7 @@ class Manage2FAForm(forms.SelfHandlingForm):
         try:
 
 	    user_id = api.keystone.get_user_id(request)
-	    user    = api.keystone.user_get(request, user_id)
+	    user    = api.keystone.user_details(request, user_id)
 	
             secret, uri = api.keystone.get_2fa_auth_details(request, user)
             print "DSdddddddddddddddddddddddddddddddddddddddddddddddddddddDDD"
@@ -100,7 +100,7 @@ class Disable2FAForm(forms.SelfHandlingForm):
             try:
 
                 user_id = api.keystone.get_user_id(request)
-                user    = api.keystone.user_get(request, user_id)
+                user    = api.keystone.user_details(request, user_id)
 
 		api.keystone.disable_2fa(request, user)
                 messages.success(request, "Two factor authentication was successfully disabled for your account.")

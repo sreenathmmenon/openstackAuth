@@ -78,12 +78,20 @@ def splash(request):
     #two_factor_enabled = user_info.two_factor_enabled
     #two_factor_enabled = str2bool(two_factor_enabled)
     LOG.info('##############################################')
-    tested = api.keystone.user_details(request, user_id)
+    user_details = api.keystone.user_details(request, user_id)
+    
+    if user_details.two_factor_enabled:
+        two_factor_enabled = str2bool(two_factor_enabled)
+    else:
+        two_factor_enabled = False
+
+    print user_details.two_factor_enabled
+    print '%%%%%%%%%%%%%%%%%%%%%%%%%'
+    print two_factor_enabled
     print('after tested')
 
-
     #Login case
-    if TWO_FACTOR_ENABLED:
+    if two_factor_enabled:
    
         #Check whether 2factor page is shown. If else show it
         if not 'totp_shown' in request.session :

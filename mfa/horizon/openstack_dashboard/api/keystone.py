@@ -32,6 +32,9 @@ import hashlib
 import hmac
 import struct
 import base64
+from keystoneauth1.identity import v2
+from keystoneauth1 import session
+from keystoneclient.v2_0 import client as kclient
 ###
 
 from django.conf import settings
@@ -135,6 +138,54 @@ def _get_endpoint_url(request, endpoint_type, catalog=None):
 
     return url
 
+def kclient_connect(request):
+    print 'entering'
+    #Getting the details of the user
+    KEYSTONE_ADMIN_TENANT_ID  = ''
+    KEYSTONE_ADMIN_USER_ID    = ''
+    tenant_id          = getattr(settings, 'KEYSTONE_ADMIN_TENANT_ID',    '')
+    admin_user_id      = getattr(settings, 'KEYSTONE_ADMIN_USER_ID',      '')
+    
+    tenant_name  = getattr(settings, 'admin',  '')
+    user_name    = getattr(settings, 'admin',    '')
+    auth_url     = getattr(settings, 'http://198.100.181.73:5000/v2.0',     '')
+    password     = getattr(settings, 'demo',     '')
+
+    tenant_id = ''
+    tenant_name = 'admin'
+    user_name = 'admin'
+    password = 'demo'
+    auth_url = 'http://198.100.181.73:5000/v2.0'
+
+    #Making the dictionary to save the data
+    keystone_cred = {}
+        
+    #Saving the details to dictionary
+    if tenant_id:
+        keystone_cred['tenant_id'] = tenant_id
+    else:
+        keystone_cred['tenant_name'] = tenant_name
+    if admin_user_id:
+        keystone_cred['user_id'] = admin_user_id
+    else:
+        keystone_cred['username'] = user_name
+
+    print 'entering-2'
+    keystone_cred['password'] = password
+    keystone_cred['auth_url'] = auth_url
+    print keystone_cred
+    auth = v2.Password(**keystone_cred)
+    sess = session.Session(auth=auth)
+    keystone = kclient.Client(session=sess)
+    """
+    print 'entering -3'
+    print user_id
+    user   = keystone.users.get(user_id)
+    print 'enetring -4'
+    print user
+    return user
+    """
+    return keystone
 
 def keystoneclient(request, admin=False):
     """Returns a client connected to the Keystone backend.
@@ -469,13 +520,13 @@ def get_user_id(request):
     client.user_id = request.user.id
     return client.user_id
 
-def user_details(request, user_id, admin=False):
+def user_details(request, user_id):
     """Fetch the information of any user"""
-    print policy.check((("identity", "user_details"),),request)
 
+    keystone = kclient_connect(request)
     print('user_details function entering')
-    user = keystoneclient(request, admin=False).users.get(user_id)
-    return VERSIONS.upgrade_v2_user(user)
+    user = keystone.users.get(user_id)
+    return user
 
 
 
@@ -516,7 +567,6 @@ def enable_2fa(request, user, **data):
 
     print "entering here"
     #data = {}
-    client = keystoneclient(request, admin=False)
     data['two_factor_enabled'] = True
 
     if user_update_2fa_details(request, user, **data):
@@ -539,7 +589,6 @@ def disable_2fa(request, user):
 
     print "entering here"
     data = {}
-    client = keystoneclient(request, admin=False)
     data['two_factor_enabled'] = False
     
     if user_update_2fa_details(request, user, **data):
@@ -552,7 +601,8 @@ def disable_2fa(request, user):
 def user_update_2fa_details(request, user, **data):
     """To update the 2fa details in DB"""
 
-    manager = keystoneclient(request, admin=True).users
+    #manager = keystoneclient(request, admin=True).users
+    manager = kclient_connect(request).users
     print manager
     print '%%%%%%%%%%%%%%%%%%%%%%%5'
     if manager.update(user, **data):

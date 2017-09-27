@@ -32,7 +32,7 @@ def validate_code(request):
     user_id = api.keystone.get_user_id(request)
     print "USER CHECK"
     print user_id
-    user            = api.keystone.user_get(request, user_id)
+    user            = api.keystone.user_details(request, user_id)
     user_auth_code  = request.GET.get('auth_code', None)
     secret          = request.GET.get('secret', None)
 
@@ -76,7 +76,7 @@ class Manage2FAView(forms.ModalFormView):
 
     	#Fetching the userid and using that to get the full user information	
 	user_id = api.keystone.get_user_id(self.request)
-        user    = api.keystone.user_get(self.request, user_id)
+        user    = api.keystone.user_details(self.request, user_id)
 
 	print "#################Views page #########################"
     	print user
@@ -113,7 +113,7 @@ class Disable2FAView(forms.ModalFormView):
 
     def dispatch(self, request, *args, **kwargs):
         user_id = self.request.user.id
-        user    = api.keystone.user_get(request, user_id)
+        user    = api.keystone.user_details(request, user_id)
 
 	if not user.two_factor_enabled:
 	    print "Two factor not enabled"
